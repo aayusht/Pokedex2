@@ -49,7 +49,7 @@ class Utils {
          * RecyclerView or something. All we need to do is define a new JSONRunnable whose run
          * method updates the RecyclerView given a JSONObject, and call
          *
-         * new FetchJSONTask(urlString, WeatherJSONRunnable r, WeatherActivity.this).exectute()
+         * new FetchJSONTask(urlString, WeatherJSONRunnable r, WeatherActivity.this).execute()
          *
          * No need to copy paste this AsyncTask over and over!
          */
