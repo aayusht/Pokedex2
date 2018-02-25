@@ -31,6 +31,9 @@ class Utils {
      * with it. THIS IS NOT AN ACTUAL RUNNABLE. This is just how we handle lambdas in Java.
      * You implement this interface with a bunch of different classes, but you can always
      * call the run method, which will come in handy later
+     *
+     * It accomplishes the same thing as a Runnable, except here we can take in a JSONObject.
+     * If we didn't need any arguments, a Runnable would have sufficed.
      */
     interface JSONRunnable {
         void run(JSONObject jsonObject);
