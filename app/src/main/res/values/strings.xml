@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Pokedex Squared</string>
+    <string name="search">Search</string>
+    <string name="speed">Speed: %d</string>
+    <string name="spatk">Sp Attack: %d</string>
+    <string name="spdef">Sp Defense: %d</string>
+    <string name="defense">Defense: %d</string>
+    <string name="attack">Attack: %d</string>
+    <string name="hp">HP: %d</string>
+    <string name="speedDefault">Speed: </string>
+    <string name="spatkDefault">Sp Attack: </string>
+    <string name="spdefDefault">Sp Defense: </string>
+    <string name="defenseDefault">Defense: </string>
+    <string name="attackDefault">Attack: </string>
+    <string name="hpDefault">HP: </string>
+    <string name="spriteContentDescription">Front sprite of Pokemon</string>
+    <string name="name">Name</string>
+</resources>
