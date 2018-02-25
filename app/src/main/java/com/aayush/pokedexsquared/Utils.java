@@ -39,6 +39,9 @@ class Utils {
     /**
      * AsyncTasks should always be static if they do any UI stuff, otherwise memory leaks can occur.
      * It looks weird, but it opens more possibilities to organizing your code better.
+     *
+     * This class is a general AsyncTask to get a JSONObject from a given URL, and with the result 
+     * execute a given task (a JSONRunnable)
      */
     static class FetchJSONTask extends AsyncTask<Void, Void, JSONObject> {
         final String urlString;
