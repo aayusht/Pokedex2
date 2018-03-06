@@ -21,7 +21,7 @@ import java.net.URL;
 class Utils {
     final static String BASEURL = "https://pokeapi.co/api/v2/pokemon/";
 
-    private static String convertStreamToString(java.io.InputStream is) {
+    static String convertStreamToString(java.io.InputStream is) {
         java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
     }

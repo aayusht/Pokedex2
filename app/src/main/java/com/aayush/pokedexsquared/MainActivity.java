@@ -1,10 +1,23 @@
 package com.aayush.pokedexsquared;
 
+import android.annotation.SuppressLint;
+import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -16,14 +29,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import static com.aayush.pokedexsquared.Utils.*;
 
 public class MainActivity extends AppCompatActivity {
+    ViewPager fragmentPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fragmentPager = findViewById(R.id.viewPager);
+        fragmentPager.setAdapter(new PokemonPageAdapter(getSupportFragmentManager(), "diglett"));
     }
 
     @Override
@@ -36,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                (new FetchJSONTask(BASEURL + s.toLowerCase(), new SetPokemonViews(), MainActivity.this)).execute();
+                fragmentPager.setAdapter(new PokemonPageAdapter(getSupportFragmentManager(), s));
                 return true;
             }
 
@@ -46,6 +68,108 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         return true;
+    }
+
+    class PokemonPageAdapter extends FragmentStatePagerAdapter {
+        String pokemonName = "diglett";
+        public PokemonPageAdapter(FragmentManager fm, String pokemonName) {
+            super(fm);
+            this.pokemonName = pokemonName;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return PokemonFragment.newInstance(pokemonName, position);
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+    }
+
+    public static class PokemonFragment extends Fragment {
+        int position;
+        String pokemonName;
+
+        static PokemonFragment newInstance(String pokemonName, int position) {
+            PokemonFragment fragment = new PokemonFragment();
+            Bundle args = new Bundle();
+            args.putInt("position", position);
+            args.putString("name", pokemonName);
+            Log.d("name", pokemonName);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            this.position = getArguments().getInt("position");
+            this.pokemonName = getArguments().getString("name");
+        }
+
+        @SuppressLint("StaticFieldLeak")
+        @Nullable
+        @Override
+        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            final View view;
+            switch(position) {
+                case 0:
+                    view = inflater.inflate(R.layout.fragment_pokemon, container, false);
+                    new AsyncTask<Void, Void, JSONObject>() {
+
+                        @Override
+                        protected JSONObject doInBackground(Void... voids) {
+                            try {
+                                URL url = new URL(BASEURL + pokemonName.toLowerCase());
+                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                conn.setRequestMethod("GET");
+                                InputStream in = new BufferedInputStream(conn.getInputStream());
+                                String response = convertStreamToString(in);
+                                return new JSONObject(response);
+                            } catch (IOException | JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        protected void onPostExecute(JSONObject jsonObject) {
+                            if (jsonObject != null) {
+                                TextView name, attack, defense, spatk, spdef, hp, speed;
+                                ImageView imageView;
+                                name = view.findViewById(R.id.textView);
+                                attack = view.findViewById(R.id.attack);
+                                defense = view.findViewById(R.id.defense);
+                                spatk = view.findViewById(R.id.spatk);
+                                spdef = view.findViewById(R.id.spdef);
+                                hp = view.findViewById(R.id.hp);
+                                speed = view.findViewById(R.id.speed);
+                                imageView = view.findViewById(R.id.imageView);
+                                try {
+                                    name.setText(jsonObject.getString("name"));
+                                    JSONArray stats = jsonObject.getJSONArray("stats");
+                                    speed.setText(getString(R.string.speed, stats.getJSONObject(0).getInt("base_stat")));
+                                    spdef.setText(getString(R.string.spdef, stats.getJSONObject(1).getInt("base_stat")));
+                                    spatk.setText(getString(R.string.spatk, stats.getJSONObject(2).getInt("base_stat")));
+                                    defense.setText(getString(R.string.defense, stats.getJSONObject(3).getInt("base_stat")));
+                                    attack.setText(getString(R.string.attack, stats.getJSONObject(4).getInt("base_stat")));
+                                    hp.setText(getString(R.string.hp, stats.getJSONObject(5).getInt("base_stat")));
+                                    String imageUrl = jsonObject.getJSONObject("sprites").getString("front_default");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }.execute();
+
+                    break;
+                default:
+                    view = inflater.inflate(R.layout.fragment_moves, container, false);
+            }
+            return view;
+        }
     }
 
     /**
